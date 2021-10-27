@@ -29,6 +29,7 @@ namespace WindowsFormsApp1
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.panel1 = new System.Windows.Forms.Panel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.textBoxIp = new System.Windows.Forms.TextBox();
@@ -73,7 +74,6 @@ namespace WindowsFormsApp1
             this.textBoxIp.PlaceholderText = "google.com";
             this.textBoxIp.Size = new System.Drawing.Size(169, 27);
             this.textBoxIp.TabIndex = 2;
-            this.textBoxIp.Text = "google.com";
             // 
             // buttonStart
             // 
@@ -91,9 +91,9 @@ namespace WindowsFormsApp1
             this.label1.Font = new System.Drawing.Font("Adobe Fan Heiti Std B", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.label1.Location = new System.Drawing.Point(23, 22);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(630, 34);
+            this.label1.Size = new System.Drawing.Size(669, 34);
             this.label1.TabIndex = 1;
-            this.label1.Text = "INICIADO EM 00:00:00 | ERROS ENCONTRADO 1000";
+            this.label1.Text = "INICIADO EM 00:00:00 | NENHUM ERRO ENCONTRADO";
             // 
             // panel2
             // 
@@ -117,22 +117,25 @@ namespace WindowsFormsApp1
             this.listView1.Location = new System.Drawing.Point(0, 0);
             this.listView1.Name = "listView1";
             this.listView1.Size = new System.Drawing.Size(1252, 701);
-            this.listView1.TabIndex = 1;
+            this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
             // 
             // columnHeader1
             // 
+            this.columnHeader1.Name = "columnHeader1";
             this.columnHeader1.Text = "Hora";
             this.columnHeader1.Width = 150;
             // 
             // columnHeader2
             // 
+            this.columnHeader2.Name = "columnHeader2";
             this.columnHeader2.Text = "Status";
             this.columnHeader2.Width = 350;
             // 
             // columnHeader3
             // 
+            this.columnHeader3.Name = "columnHeader3";
             this.columnHeader3.Text = "Resultado";
             this.columnHeader3.Width = 700;
             // 
@@ -143,6 +146,7 @@ namespace WindowsFormsApp1
             this.ClientSize = new System.Drawing.Size(1252, 779);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormMain";
             this.Text = "Internet Check";
             this.panel1.ResumeLayout(false);

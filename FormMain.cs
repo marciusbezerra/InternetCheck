@@ -53,10 +53,12 @@ namespace WindowsFormsApp1
             }
             catch (PingException ex)
             {
-                onResult($"Ping {ip}", $"PING ERRO: {ex.Message}", true);
+                var errorMsg = ex.InnerException?.Message ?? ex.Message;
+                onResult($"Ping {ip}", $"PING ERRO: {errorMsg}", true);
             }
             catch (Exception ex)
             {
+                var errorMsg = ex.InnerException?.Message ?? ex.Message;
                 onResult($"Ping {ip}", $"ERRO: {ex.Message}", true);
             }
         }
@@ -76,8 +78,8 @@ namespace WindowsFormsApp1
                     {
                         var ct = cts.Token;
                         TimeStart = DateTime.Now;
+                        ErrorCount = 0;
                         buttonStart.Text = STOP_CAPTION;
-                        if (TimeStart == DateTime.MinValue) TimeStart = DateTime.Now;
                         label1.Text = $"INICIADO EM {TimeStart:HH:mm:ss} | ERROS ENCONTRADO {ErrorCount}";
                         await CheckPingAsync(textBoxIp.Text, ct);
                     }
