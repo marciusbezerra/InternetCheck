@@ -1,55 +1,95 @@
 ﻿using System;
 using System.Drawing;
-using System.Net.Http;
 using System.Windows.Forms;
-using System.Timers;
-using Timer = System.Timers.Timer;
+using System.Threading.Tasks;
+using System.Net.NetworkInformation;
+using System.Threading;
 
 namespace WindowsFormsApp1
 {
     public partial class FormMain : Form
     {
-        private Timer Interval;
-        DateTime timeStart;
         int ErrorCount;
+        DateTime TimeStart;
+
+        const string START_CAPTION = "Iniciar";
+        const string STOP_CAPTION = "Parar";
+
+        CancellationTokenSource cts;
 
         public FormMain()
         {
             InitializeComponent();
-            Interval = new Timer();
-            Interval.Elapsed += new ElapsedEventHandler(async (o, e) =>
-            {
-                HttpClient httpClient = new HttpClient();
-                try
-                {
-                    var content = await httpClient.GetStringAsync("https://www.google.com");
-                    if (!string.IsNullOrWhiteSpace(content))
-                    {
-                        AddListItem("Acessando google.com", "OK", false);
-                    }
-                    else throw new Exception("Nenhum conteúdo!");
-                }
-                catch (Exception ex)
-                {
-                    AddListItem("Acessando google.com", $"ERRO: {ex.Message}", true);
-                }
-            });
         }
 
-        private void buttonStart_Click(object sender, EventArgs e)
+        private async Task CheckPingAsync(string ip, CancellationToken ct)
         {
-            if (Interval.Enabled)
+            var timeout = 15000; // 12 seconds
+
+            while (true)
             {
-                Interval.Enabled = false;
-                buttonStart.Text = "Iniciar testes";
+                if (ct.IsCancellationRequested) break;
+                await PingAsync(ip, timeout, (t, m, e) =>
+                {
+                    AddListItem(t, m, e);
+                });
+                await Task.Delay(10000, ct);
             }
-            else
+        }
+
+        private async Task PingAsync(string ip, int timeOut, Action<string, string, bool> onResult)
+        {
+            var buffer = new byte[32];
+            var options = new PingOptions(64, true);
+
+            using var ping = new Ping();
+            try
             {
-                Interval.Interval = 3000;
-                Interval.Enabled = true;
-                buttonStart.Text = "Parar testes";
-                if (timeStart == DateTime.MinValue) timeStart = DateTime.Now;
-                label1.Text = $"INICIADO EM {timeStart:HH:mm:ss} | ERROS ENCONTRADO {ErrorCount}";
+                var reply = await ping.SendPingAsync(ip, timeOut, buffer, options);
+                if (reply.Status == IPStatus.Success)
+                    onResult($"Ping {ip}", $"OK: {reply.Address}", false);
+                else
+                    onResult($"Ping {ip}", $"PING ERRO: {reply.Status}", true);
+            }
+            catch (PingException ex)
+            {
+                onResult($"Ping {ip}", $"PING ERRO: {ex.Message}", true);
+            }
+            catch (Exception ex)
+            {
+                onResult($"Ping {ip}", $"ERRO: {ex.Message}", true);
+            }
+        }
+
+        private async void buttonStart_ClickAsync(object sender, EventArgs e)
+        {
+            try
+            {
+                if (buttonStart.Text == STOP_CAPTION)
+                {
+                    cts.Cancel();
+                    buttonStart.Text = START_CAPTION;
+                }
+                else
+                {
+                    using (cts = new CancellationTokenSource())
+                    {
+                        var ct = cts.Token;
+                        TimeStart = DateTime.Now;
+                        buttonStart.Text = STOP_CAPTION;
+                        if (TimeStart == DateTime.MinValue) TimeStart = DateTime.Now;
+                        label1.Text = $"INICIADO EM {TimeStart:HH:mm:ss} | ERROS ENCONTRADO {ErrorCount}";
+                        await CheckPingAsync(textBoxIp.Text, ct);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                AddListItem("Parado", "Operação Cancelada", false);
+            }
+            catch (Exception ex)
+            {
+                AddListItem("Erro Fatal", ex.Message, true);
             }
         }
 
@@ -63,7 +103,7 @@ namespace WindowsFormsApp1
                 listViewItem.EnsureVisible();
                 listViewItem.ForeColor = error ? Color.Red : Color.LightGreen;
                 if (error) ErrorCount++;
-                label1.Text = $"INICIADO EM {timeStart:HH:mm:ss} | ERROS ENCONTRADO {ErrorCount}";
+                label1.Text = $"INICIADO EM {TimeStart:HH:mm:ss} | ERROS ENCONTRADO {ErrorCount}";
             }
             else
             {
