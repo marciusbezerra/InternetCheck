@@ -47,7 +47,7 @@ namespace WindowsFormsApp1
             {
                 var reply = await ping.SendPingAsync(ip, timeOut, buffer, options);
                 if (reply.Status == IPStatus.Success)
-                    onResult($"Ping {ip}", $"OK: {reply.Address}", false);
+                    onResult($"Ping {ip}", $"OK: {reply.Address}: {reply.RoundtripTime}", false);
                 else
                     onResult($"Ping {ip}", $"PING ERRO: {reply.Status}", true);
             }
@@ -76,6 +76,7 @@ namespace WindowsFormsApp1
                 {
                     using (cts = new CancellationTokenSource())
                     {
+                        ClearListItems();
                         var ct = cts.Token;
                         TimeStart = DateTime.Now;
                         ErrorCount = 0;
@@ -110,6 +111,20 @@ namespace WindowsFormsApp1
             else
             {
                 Invoke(new Action<string, string, bool>(AddListItem), status, result, error);
+            }
+        }
+
+        public void ClearListItems()
+        {
+            if (!InvokeRequired)
+            {
+                listView1.Items.Clear();
+                ErrorCount = 0;
+                label1.Text = $"INICIADO EM {TimeStart:HH:mm:ss} | ERROS ENCONTRADO {ErrorCount}";
+            }
+            else
+            {
+                Invoke(new Action(ClearListItems));
             }
         }
     }
